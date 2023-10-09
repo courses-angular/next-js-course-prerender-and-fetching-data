@@ -1,6 +1,7 @@
 import {Inter} from 'next/font/google';
 import fs from 'fs/promises';
 import path from "path";
+import Link from "next/link";
 
 const inter = Inter({subsets: ['latin']})
 
@@ -9,15 +10,18 @@ const Home = (props) => {
     return (
         <ul>
             {products.map(product => (
-                <li key={product.id}>{product.title}</li>)
+                <li key={product.id}><Link href={`/${product.id}`}>{product.title}</Link></li>)
             )}
         </ul>
     )
 }
-export const getStaticProps = async (context) => {
+const getData = async () => {
     const filePath = path.join(process.cwd(), 'data/dummy-backend.json')
     const fileJSON = await fs.readFile(filePath);
-    const data = JSON.parse(fileJSON)
+    return JSON.parse(fileJSON)
+}
+export const getStaticProps = async (context) => {
+    const data = await getData();
     console.log(data);
     if (!data) {
         return {

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 
-const LastSales = () => {
-  const [sales, setSales] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+const LastSales = (props) => {
+  const [sales, setSales] = useState([props.sales]);
+  // const [isLoading, setIsLoading] = useState(false);
 
   const fetcher = (url) => fetch(url).then((res) => res.json());
   const { data, error } = useSWR(
@@ -12,9 +12,6 @@ const LastSales = () => {
   );
 
   useEffect(() => {
-    console.group("%c GROUP", "color:#84B59F");
-    console.log({ data });
-    console.groupEnd();
     if (data) {
       const transformedData = [];
       for (const key in data) {
@@ -47,7 +44,7 @@ const LastSales = () => {
   //     });
   // }, []);
 
-  if (!data) {
+  if (!data && !sales) {
     return <p>Loading...</p>;
   }
   if (error) {
@@ -55,12 +52,30 @@ const LastSales = () => {
   }
   return (
     <ul>
-      {sales.map((sale) => (
-        <li key={sale.id}>
+      {sales.map((sale, index) => (
+        <li key={index}>
           {sale.username} - ${sale.volume}
         </li>
       ))}
     </ul>
   );
+};
+
+export const getStaticProps = async () => {
+  const response = await fetch(
+    "https://nextjs-course-b1a4b-default-rtdb.firebaseio.com/sales.json"
+  );
+  const data = await response.json();
+  const transformedData = [];
+  for (const key in data) {
+    transformedData.push({
+      id: key,
+      username: data[key].username,
+      volume: data[key].volume,
+    });
+  }
+  return {
+    props: { sales: transformedData, revalidate: 10 },
+  };
 };
 export default LastSales;
